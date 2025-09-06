@@ -50,13 +50,13 @@
     <div class="background-bubbles" id="bubbles"></div>
     <div class="header"><div class="logo"><i class="fas fa-key"></i></div></div>
     <div class="container">
-        <h1>🔑 Hệ Thống Key Roblox Premium</h1>
-        <p>Nhận key miễn phí để kích hoạt script trong game Roblox. Key có hiệu lực trong 24 giờ.</p>
+        <h1>luexkeysystem</h1>
+        <p>Get a free key to activate scripts in Roblox games. Key is valid for 24 hours.</p>
         <div id="getKeySection">
-            <button id="getKeyBtn" class="btn"><span class="btn-icon"><i class="fas fa-gamepad"></i></span> Lấy Key Ngay</button>
+            <button id="getKeyBtn" class="btn"><span class="btn-icon"><i class="fas fa-gamepad"></i></span> Get Key</button>
         </div>
         <div id="countdown" class="countdown" style="display:none;">
-            <h3><i class="fas fa-clock"></i> Bạn có thể lấy key mới sau:</h3>
+            <h3><i class="fas fa-clock"></i> You can get new key after:</h3>
             <div id="timer" class="timer">00:00:00</div>
         </div>
         <div id="keyContainer" style="display:none;">
@@ -67,19 +67,19 @@
             <div id="statusMessage" class="status"></div>
         </div>
         <div class="instructions">
-            <h3><i class="fas fa-info-circle"></i> Hướng dẫn sử dụng:</h3>
+            <h3><i class="fas fa-info-circle"></i> User manual:</h3>
             <ol>
-                <li>Nhấn "Lấy Key" để tạo key mới</li>
-                <li>Sao chép key bằng nút "Sao chép"</li>
-                <li>Vào game Roblox, mở GUI và nhập key</li>
-                <li>Nhấn "Check Key" để kích hoạt script</li>
-                <li>Key có hiệu lực trong 24 giờ</li>
-                <li>Chỉ được lấy key mới sau thời gian chờ từ server</li>
+                <li>Click "Get Key" to generate a new key</li>
+                <li>Copy the key using the "Copy" button"</li>
+                <li>Go to Roblox game, open script and enter key</li>
+                <li>Click "Check Key" to activate the script</li>
+                <li>Key valid for 24 hours</li>
+                <li>New key can only be obtained after 1 hour</li>
             </ol>
         </div>
     </div>
     <div class="footer"><p>© 2025 Hệ Thống Key Roblox Premium. All rights reserved.</p></div>
-    <div class="toast" id="toast"><i class="fas fa-check-circle"></i><div class="toast-message">Key đã được sao chép thành công!</div></div>
+    <div class="toast" id="toast"><i class="fas fa-check-circle"></i><div class="toast-message">Key copied successfully!</div></div>
 
     <script>
     const SERVER_URL = 'https://qqwq-getkeyluex.onrender.com'; // Thay bằng server của bạn
@@ -170,7 +170,7 @@
                 startCountdown(msLeft);
             }
         } catch(err) {
-            console.error("Không thể kết nối server:", err);
+            console.error("Unable to connect to server:", err);
         }
     }
 
@@ -195,7 +195,7 @@
                 document.getElementById('keyContainer').style.display = 'block';
                 document.getElementById('statusMessage').className = 'status success';
                 document.getElementById('statusMessage').innerHTML =
-                    `<i class="fas fa-check-circle"></i> Key đã được tạo! Hết hạn: ${new Date(data.expires).toLocaleString('vi-VI')}`;
+                    `<i class="fas fa-check-circle"></i> Key created! Expires: ${new Date(data.expires).toLocaleString('vi-VI')}`;
                 showToast('Key đã được tạo thành công!', 'success');
             } else {
                 document.getElementById('statusMessage').className = 'status warning';
@@ -206,21 +206,21 @@
         } catch(err) {
             document.getElementById('statusMessage').className = 'status error';
             document.getElementById('statusMessage').innerHTML =
-                '<i class="fas fa-exclamation-circle"></i> Không thể kết nối server';
-            showToast('Không thể kết nối server', 'error');
+                '<i class="fas fa-exclamation-circle"></i> Unable to connect to server';
+            showToast('Unable to connect to server', 'error');
         } finally {
             this.disabled = false;
-            this.innerHTML = '<span class="btn-icon"><i class="fas fa-gamepad"></i></span> Lấy Key Ngay';
+            this.innerHTML = '<span class="btn-icon"><i class="fas fa-gamepad"></i></span> Get Key';
         }
     });
 
     document.getElementById('copyKeyBtn').addEventListener('click', function() {
         const key = document.getElementById('keyText').textContent;
         navigator.clipboard.writeText(key).then(() => {
-            showToast('Key đã được sao chép vào clipboard!', 'success');
-            this.innerHTML = '<span class="btn-icon"><i class="fas fa-check"></i></span> Đã sao chép';
+            showToast('Key has been copied to clipboard!', 'success');
+            this.innerHTML = '<span class="btn-icon"><i class="fas fa-check"></i></span> Copy successfully!';
             setTimeout(() => {
-                this.innerHTML = '<span class="btn-icon"><i class="fas fa-copy"></i></span> Sao chép';
+                this.innerHTML = '<span class="btn-icon"><i class="fas fa-copy"></i></span> Copy';
             }, 2000);
         }).catch(() => {
             showToast('Sao chép thất bại!', 'error');
