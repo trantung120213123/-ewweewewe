@@ -431,6 +431,8 @@
                 const data = await response.json();
                 
                 if (data.success) {
+                    // Lưu token vào localStorage trước khi redirect
+                    localStorage.setItem('pending_token', data.token);
                     // Chuyển hướng đến link vượt link
                     window.location.href = data.link;
                 } else {
