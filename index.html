@@ -1,233 +1,496 @@
 <!DOCTYPE html>
 <html lang="vi">
 <head>
-  <meta charset="utf-8"/>
-  <meta name="viewport" content="width=device-width,initial-scale=1"/>
-  <title>luexkeysystem — Key System</title>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
-  <style>
-    /* Styles (kept concise) */
-    :root{--p:#5865F2;--pg:linear-gradient(135deg,#5865F2,#8345F5);--success:#57F287;--danger:#ED4245;--bg1:#2C2F33;--bg2:#23272A;--light:#F5F5F5}
-    *{margin:0;padding:0;box-sizing:border-box;font-family:Poppins,Segoe UI,system-ui}
-    body{background:linear-gradient(135deg,var(--bg1),var(--bg2));color:var(--light);min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px}
-    .container{width:100%;max-width:760px;background:rgba(0,0,0,0.5);padding:28px;border-radius:18px;backdrop-filter:blur(8px);box-shadow:0 12px 40px rgba(0,0,0,0.4)}
-    .logo{font-size:40px;margin-bottom:8px;background:var(--pg);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
-    h1{font-size:28px;margin-bottom:6px;background:var(--pg);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
-    p{color:rgba(255,255,255,0.8);margin-bottom:12px}
-    .btn{background:var(--pg);border:none;color:#fff;padding:10px 16px;border-radius:12px;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;gap:8px}
-    .btn-suc{background:linear-gradient(135deg,var(--success),#2dc46a)}
-    .key-row{display:flex;justify-content:space-between;align-items:center;padding:12px;border-radius:12px;background:rgba(255,255,255,0.04);margin-top:12px}
-    input{width:100%;padding:10px;border-radius:8px;border:1px solid rgba(255,255,255,0.06);background:transparent;color:var(--light)}
-    .cols{display:flex;gap:16px;margin-top:16px;flex-wrap:wrap}
-    .card{flex:1 1 240px;background:rgba(255,255,255,0.03);padding:12px;border-radius:12px}
-    .small{font-size:13px;color:rgba(255,255,255,0.8)}
-    .timer{font-family:monospace;font-weight:800;color:#FEE75C}
-    .toast{position:fixed;top:18px;right:18px;background:rgba(15,15,20,0.95);padding:12px 16px;border-radius:10px;color:#fff;transform:translateX(120%);transition:transform .45s cubic-bezier(.68,-.55,.27,1.55);z-index:999}
-    .toast.show{transform:translateX(0)}
-    .overlay{position:fixed;inset:0;background:rgba(0,0,0,0.6);display:flex;align-items:center;justify-content:center;z-index:200;backdrop-filter:blur(3px)}
-    .modal{background:rgba(0,0,0,0.55);padding:18px;border-radius:12px;max-width:520px;width:92%;text-align:center}
-    @media(max-width:720px){.cols{flex-direction:column}}
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Luex Key System - Nhận Key Premium</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #5865F2;
+            --primary-gradient: linear-gradient(135deg, #5865F2, #8345F5);
+            --success: #57F287;
+            --danger: #ED4245;
+            --warning: #FEE75C;
+            --dark: #2C2F33;
+            --darker: #23272A;
+            --light: #F5F5F5;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', 'Segoe UI', sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, var(--dark), var(--darker));
+            color: var(--light);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            overflow-x: hidden;
+        }
+        
+        .background-bubbles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            overflow: hidden;
+        }
+        
+        .bubble {
+            position: absolute;
+            border-radius: 50%;
+            background: rgba(88, 101, 242, 0.1);
+            animation: float 15s infinite ease-in-out;
+        }
+        
+        @keyframes float {
+            0%, 100% {
+                transform: translateY(0) rotate(0deg);
+            }
+            50% {
+                transform: translateY(-20px) rotate(180deg);
+            }
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        
+        .logo {
+            font-size: 40px;
+            margin-bottom: 10px;
+            background: var(--primary-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            filter: drop-shadow(0 5px 15px rgba(88, 101, 242, 0.4));
+        }
+        
+        .container {
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(12px);
+            border-radius: 20px;
+            padding: 30px;
+            width: 100%;
+            max-width: 500px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+            z-index: 10;
+        }
+        
+        h1 {
+            margin-bottom: 20px;
+            background: var(--primary-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-size: 32px;
+            font-weight: 800;
+            text-shadow: 0 2px 10px rgba(88, 101, 242, 0.3);
+        }
+        
+        p {
+            margin-bottom: 25px;
+            line-height: 1.6;
+            color: rgba(255, 255, 255, 0.8);
+        }
+        
+        .key-box {
+            background: rgba(255, 255, 255, 0.08);
+            padding: 15px;
+            border-radius: 12px;
+            margin: 20px 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .key-text {
+            font-family: 'Courier New', monospace;
+            font-size: 18px;
+            letter-spacing: 1px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            font-weight: 600;
+        }
+        
+        .btn {
+            background: var(--primary-gradient);
+            color: white;
+            border: none;
+            padding: 14px 28px;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 5px 15px rgba(88, 101, 242, 0.3);
+        }
+        
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(88, 101, 242, 0.4);
+        }
+        
+        .btn-success {
+            background: linear-gradient(135deg, var(--success), #2dc46a);
+        }
+        
+        .btn:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+        }
+        
+        .btn-icon {
+            margin-right: 10px;
+            font-size: 18px;
+        }
+        
+        .status {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 12px;
+            text-align: left;
+            border-left: 4px solid transparent;
+        }
+        
+        .status.success {
+            background-color: rgba(87, 242, 135, 0.15);
+            color: var(--success);
+            border-left-color: var(--success);
+        }
+        
+        .status.error {
+            background-color: rgba(237, 66, 69, 0.15);
+            color: var(--danger);
+            border-left-color: var(--danger);
+        }
+        
+        .status.warning {
+            background-color: rgba(254, 231, 92, 0.15);
+            color: var(--warning);
+            border-left-color: var(--warning);
+        }
+        
+        .countdown {
+            margin: 20px 0;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .countdown h3 {
+            margin-bottom: 10px;
+            color: var(--warning);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+        }
+        
+        .timer {
+            font-size: 24px;
+            font-weight: bold;
+            color: var(--warning);
+            font-family: 'Courier New', monospace;
+            letter-spacing: 2px;
+        }
+        
+        .footer {
+            margin-top: 30px;
+            text-align: center;
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 12px;
+        }
+        
+        .toast {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 25px;
+            background: rgba(25, 25, 35, 0.95);
+            backdrop-filter: blur(10px);
+            color: white;
+            border-radius: 12px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            display: flex;
+            align-items: center;
+            z-index: 1000;
+            transform: translateX(100%);
+            transition: transform 0.5s cubic-bezier(0.68, -0.55, 0.27, 1.55);
+            border-left: 4px solid var(--primary);
+            max-width: 350px;
+        }
+        
+        .toast.show {
+            transform: translateX(0);
+        }
+        
+        .link-info {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 15px;
+            border-radius: 12px;
+            margin: 20px 0;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .link-info a {
+            color: #5865F2;
+            text-decoration: none;
+            font-weight: bold;
+        }
+        
+        .link-info a:hover {
+            text-decoration: underline;
+        }
+        
+        @media (max-width: 600px) {
+            .container {
+                padding: 20px;
+            }
+            
+            h1 {
+                font-size: 26px;
+            }
+            
+            .key-box {
+                flex-direction: column;
+                gap: 15px;
+            }
+            
+            .btn {
+                width: 100%;
+            }
+        }
+    </style>
 </head>
 <body>
-  <div class="container">
-    <div class="logo"><i class="fas fa-key"></i></div>
-    <h1>luexkeysystem</h1>
-    <p>Get a free key to activate scripts in Roblox games. Key valid 24 hours. New key every 1 hour per device (HWID).</p>
-
-    <div id="getKeySection" style="text-align:center">
-      <button id="getKeyBtn" class="btn"><i class="fas fa-gamepad"></i> Get Key</button>
+    <div class="background-bubbles" id="bubbles"></div>
+    
+    <div class="header">
+        <div class="logo"><i class="fas fa-key"></i></div>
     </div>
-
-    <div id="countdown" style="display:none;margin-top:12px">
-      <div class="small">You can get a new key after:</div>
-      <div class="timer" id="timer">00:00:00</div>
-    </div>
-
-    <div id="keyContainer" style="display:none;margin-top:12px">
-      <div class="key-row">
-        <div style="font-family:monospace;font-weight:800" id="keyText"></div>
-        <div>
-          <button id="copyKeyBtn" class="btn btn-suc"><i class="fas fa-copy"></i> Copy</button>
+    
+    <div class="container">
+        <h1>Luex Key System</h1>
+        <p>Nhận key miễn phí để kích hoạt tính năng premium trong Roblox. Key có hiệu lực trong 24 giờ.</p>
+        
+        <div class="link-info">
+            <p><i class="fas fa-info-circle"></i> Bạn sẽ được chuyển hướng đến trang xác minh để nhận key</p>
         </div>
-      </div>
-      <div id="statusMessage" class="small" style="margin-top:8px"></div>
+        
+        <div id="getKeySection">
+            <button id="getKeyBtn" class="btn">
+                <span class="btn-icon"><i class="fas fa-gamepad"></i></span> Lấy Key Ngay
+            </button>
+        </div>
+        
+        <div id="countdown" class="countdown" style="display:none;">
+            <h3><i class="fas fa-clock"></i> Bạn có thể yêu cầu key mới sau:</h3>
+            <div id="timer" class="timer">00:00:00</div>
+        </div>
+        
+        <div id="keyContainer" style="display:none;">
+            <div class="key-box">
+                <span id="keyText" class="key-text"></span>
+                <button id="copyKeyBtn" class="btn btn-success">
+                    <span class="btn-icon"><i class="fas fa-copy"></i></span> Sao chép
+                </button>
+            </div>
+            <div id="statusMessage" class="status"></div>
+        </div>
+        
+        <div class="instructions">
+            <h3><i class="fas fa-info-circle"></i> Hướng dẫn sử dụng:</h3>
+            <ol>
+                <li>Nhấn "Lấy Key Ngay" để tạo token và chuyển đến trang xác minh</li>
+                <li>Hoàn thành quá trình xác minh trên trang bên ngoài</li>
+                <li>Bạn sẽ được chuyển hướng trở lại để nhận key</li>
+                <li>Sao chép key và sử dụng trong Roblox</li>
+                <li>Key có hiệu lực trong 24 giờ</li>
+                <li>Chỉ có thể yêu cầu key mới sau 1 giờ</li>
+            </ol>
+        </div>
+    </div>
+    
+    <div class="footer">
+        <p>© 2025 Hệ Thống Key Roblox Premium. All rights reserved.</p>
+    </div>
+    
+    <div class="toast" id="toast">
+        <i class="fas fa-check-circle"></i>
+        <div class="toast-message">Key đã được sao chép!</div>
     </div>
 
-    <div class="cols">
-      <div class="card">
-        <h4><i class="fas fa-info-circle"></i> Instructions</h4>
-        <ol style="padding-left:18px;margin-top:8px;color:rgba(255,255,255,0.85)">
-          <li>Click <b>Get Key</b> — you'll be redirected through Linkvertise (or direct) to complete the step.</li>
-          <li>After finishing, the redirect returns to this page with token; an overlay appears.</li>
-          <li>Press final <b>Get Key</b> in overlay to receive your key.</li>
-        </ol>
-      </div>
-
-      <div class="card">
-        <h4><i class="fas fa-shield-check"></i> Verify Key</h4>
-        <label class="small">Key</label>
-        <input id="verifyKeyInput" placeholder="Nhập key để check" />
-        <label class="small" style="margin-top:8px">User ID</label>
-        <input id="verifyUserIdInput" placeholder="Roblox user id" />
-        <button id="verifyBtn" class="btn" style="margin-top:10px"><i class="fas fa-check"></i> Check</button>
-        <div id="verifyResult" style="margin-top:10px"></div>
-      </div>
-
-      <div class="card">
-        <h4><i class="fas fa-info"></i> Key Info</h4>
-        <label class="small">Key</label>
-        <input id="infoKeyInput" placeholder="Nhập key để xem thông tin" />
-        <button id="infoBtn" class="btn" style="margin-top:10px"><i class="fas fa-info-circle"></i> Get Info</button>
-        <pre id="infoResult" style="display:none;margin-top:10px;background:rgba(0,0,0,0.25);padding:8px;border-radius:8px;color:#fff;"></pre>
-      </div>
-    </div>
-
-    <div style="margin-top:14px" class="small">© 2025 Luexkeysystem</div>
-  </div>
-
-  <div id="toast" class="toast"><i class="fas fa-check-circle"></i> <span id="toastMsg" style="margin-left:8px"></span></div>
-
-  <div id="finalOverlay" class="overlay" style="display:none">
-    <div class="modal">
-      <h3><i class="fas fa-flag-checkered"></i> Hoàn tất bước trung gian</h3>
-      <p class="small">Token đã được nhận từ link redirect. Bấm <b>Get Key</b> để lấy key (token 1 lần, 5 phút).</p>
-      <div style="margin-top:12px">
-        <button id="finalGetKeyBtn" class="btn"><i class="fas fa-download"></i> Get Key</button>
-        <button id="closeOverlayBtn" class="btn" style="margin-left:8px;background:rgba(255,255,255,0.06)"><i class="fas fa-times"></i> Cancel</button>
-      </div>
-      <div id="finalStatus" class="small" style="margin-top:10px"></div>
-    </div>
-  </div>
-
-  <script>
-    // =========================
-    // SERVER_URL:
-    // By default we use window.location.origin which matches Render's same-origin deployment.
-    // If you want to hardcode your domain, replace the line below with:
-    // const SERVER_URL = "https://your-domain.com";
-    // =========================
-    const SERVER_URL = window.location.origin;
-
-    // HWID generator (same as earlier)
-    function generateHWID(){
-      const components = [navigator.userAgent||'', navigator.platform||'', navigator.hardwareConcurrency||'', (screen? screen.width + 'x' + screen.height : ''), navigator.language||'', new Date().getTimezoneOffset()];
-      let hwid = components.join('|'), hash = 0;
-      for (let i=0;i<hwid.length;i++){ const c = hwid.charCodeAt(i); hash = ((hash<<5)-hash)+c; hash = hash & hash; }
-      return 'hwid_' + Math.abs(hash).toString(16);
-    }
-
-    function showToast(msg){
-      const t=document.getElementById('toast'); document.getElementById('toastMsg').textContent = msg; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),3000);
-    }
-
-    function createBubbles(){
-      for(let i=0;i<12;i++){ const d=document.createElement('div'); d.style.position='absolute'; d.style.width=(Math.random()*100+20)+'px'; d.style.height=d.style.width; d.style.left=Math.random()*100+'%'; d.style.top=Math.random()*100+'%'; d.style.borderRadius='50%'; d.style.background='rgba(88,101,242,0.06)'; d.style.zIndex='-1'; document.body.appendChild(d); }
-    }
-
-    // countdown logic
-    let countdownInterval;
-    function startCountdown(ms){
-      clearInterval(countdownInterval);
-      const timerEl=document.getElementById('timer'); let timeLeft=ms;
-      countdownInterval=setInterval(()=>{ if (timeLeft<=0){ clearInterval(countdownInterval); document.getElementById('getKeySection').style.display='block'; document.getElementById('countdown').style.display='none'; return; } timeLeft-=1000; const h=Math.floor(timeLeft/(1000*60*60)), m=Math.floor((timeLeft%(1000*60*60))/(1000*60)), s=Math.floor((timeLeft%(1000*60))/1000); timerEl.textContent = `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`; },1000);
-    }
-
-    async function checkCountdown(){
-      const hwid = generateHWID();
-      try{
-        const r = await fetch(`${SERVER_URL}/check-time-left`, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ hwid }) });
-        const d = await r.json();
-        if (d.can_request){ document.getElementById('getKeySection').style.display='block'; document.getElementById('countdown').style.display='none'; }
-        else { document.getElementById('getKeySection').style.display='none'; document.getElementById('countdown').style.display='block'; startCountdown(d.time_left*60*60*1000); }
-      }catch(e){ console.error(e); }
-    }
-
-    // Request token -> redirect via Linkvertise or direct
-    document.getElementById('getKeyBtn').addEventListener('click', async function(){
-      this.disabled=true; const old=this.innerHTML; this.innerHTML='<i class="fas fa-spinner fa-spin"></i> Creating...';
-      const hwid = generateHWID();
-      try{
-        const res = await fetch(`${SERVER_URL}/request-token`, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ hwid }) });
-        const data = await res.json();
-        if (data.success && data.redirect) {
-          // If you use Linkvertise, set LINKVERTISE_BASE on server side so `data.redirect` is proper.
-          // Here we redirect to the returned 'redirect' (could be linkvertise or direct returnUrl).
-          window.location.href = data.redirect;
-          return;
-        } else {
-          document.getElementById('statusMessage').textContent = data.message || 'Không thể tạo token';
-          showToast(data.message || 'Không thể tạo token');
-        }
-      }catch(e){ console.error(e); document.getElementById('statusMessage').textContent = 'Không thể kết nối server'; showToast('Không thể kết nối server'); }
-      finally { this.disabled=false; this.innerHTML=old; }
-    });
-
-    // handle return from linkvertise: ?token=...&hwid=...
-    function getQueryParams(){ return Object.fromEntries(new URLSearchParams(window.location.search).entries()); }
-
-    async function handleReturnToken(){
-      const q = getQueryParams();
-      if (q.token && q.hwid){
-        document.getElementById('finalOverlay').style.display='flex';
-        document.getElementById('finalStatus').textContent='';
-        document.getElementById('finalGetKeyBtn').onclick = async function(){
-          this.disabled=true; const old=this.innerHTML; this.innerHTML='<i class="fas fa-spinner fa-spin"></i> Getting...';
-          try{
-            const r = await fetch(`${SERVER_URL}/get-key`, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ token: q.token, hwid: q.hwid }) });
-            const d = await r.json();
-            if (d.success){
-              document.getElementById('keyText').textContent = d.key;
-              document.getElementById('keyContainer').style.display='block';
-              document.getElementById('statusMessage').textContent = 'Key created — expires ' + new Date(d.expires).toLocaleString();
-              showToast('Key đã được tạo!');
-              if (history.replaceState){ const u=new URL(window.location.href); u.searchParams.delete('token'); u.searchParams.delete('hwid'); history.replaceState(null,'',u.pathname + u.search); }
-              document.getElementById('finalOverlay').style.display='none';
-            } else {
-              document.getElementById('finalStatus').textContent = d.message || 'Lỗi khi lấy key';
-              showToast(d.message || 'Lỗi khi lấy key');
+    <script>
+        const SERVER_URL = "https://hackserverluex-h0u3.onrender.com";
+        
+        function createBubbles() {
+            const bubblesContainer = document.getElementById('bubbles');
+            for (let i = 0; i < 15; i++) {
+                const b = document.createElement('div');
+                b.classList.add('bubble');
+                const size = Math.random() * 100 + 20;
+                b.style.width = `${size}px`;
+                b.style.height = `${size}px`;
+                b.style.left = `${Math.random() * 100}%`;
+                b.style.top = `${Math.random() * 100}%`;
+                b.style.animationDelay = `${Math.random() * 10}s`;
+                b.style.animationDuration = `${15 + Math.random() * 15}s`;
+                bubblesContainer.appendChild(b);
             }
-          }catch(e){ console.error(e); document.getElementById('finalStatus').textContent = 'Lỗi kết nối server'; showToast('Lỗi kết nối server'); }
-          finally{ this.disabled=false; this.innerHTML=old; }
-        };
-
-        document.getElementById('closeOverlayBtn').onclick = function(){
-          document.getElementById('finalOverlay').style.display='none';
-          if (history.replaceState){ const u=new URL(window.location.href); u.searchParams.delete('token'); u.searchParams.delete('hwid'); history.replaceState(null,'',u.pathname + u.search); }
-        };
-      }
-    }
-
-    // copy key
-    document.getElementById('copyKeyBtn').addEventListener('click', function(){ const k=document.getElementById('keyText').textContent; if(!k) return showToast('No key'); navigator.clipboard.writeText(k).then(()=> showToast('Copied')).catch(()=> showToast('Copy failed')); });
-
-    // verify key
-    document.getElementById('verifyBtn').addEventListener('click', async function(){
-      const key=document.getElementById('verifyKeyInput').value.trim();
-      const user_id=document.getElementById('verifyUserIdInput').value.trim();
-      const out=document.getElementById('verifyResult');
-      if(!key || !user_id){ out.textContent='Nhập key và user_id'; out.style.color='#FEE75C'; return; }
-      try{
-        const r = await fetch(`${SERVER_URL}/verify-key`, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ key, user_id }) });
-        const d = await r.json();
-        if (d.valid){ out.textContent = 'Key hợp lệ — expires: ' + d.expires_at; out.style.color='#57F287'; }
-        else { out.textContent = d.reason || 'Invalid'; out.style.color='#ff8080'; }
-      }catch(e){ out.textContent='Lỗi kết nối'; out.style.color='#ff8080'; }
-    });
-
-    // key info
-    document.getElementById('infoBtn').addEventListener('click', async function(){
-      const k=document.getElementById('infoKeyInput').value.trim();
-      const pre=document.getElementById('infoResult');
-      if(!k) return;
-      try {
-        const r = await fetch(`${SERVER_URL}/key-info/${encodeURIComponent(k)}`);
-        const d = await r.json();
-        pre.style.display='block'; pre.textContent = JSON.stringify(d, null, 2);
-      } catch(e) { pre.style.display='block'; pre.textContent='Lỗi kết nối'; }
-    });
-
-    window.addEventListener('load', () => { createBubbles(); checkCountdown(); handleReturnToken(); });
-  </script>
+        }
+        
+        function showToast(message, type = 'success') {
+            const toast = document.getElementById('toast');
+            const toastIcon = toast.querySelector('i');
+            const toastMessage = toast.querySelector('.toast-message');
+            toastMessage.textContent = message;
+            toast.className = 'toast show ' + type;
+            
+            if (type === 'success') toastIcon.className = 'fas fa-check-circle';
+            if (type === 'error') toastIcon.className = 'fas fa-exclamation-circle';
+            if (type === 'warning') toastIcon.className = 'fas fa-exclamation-triangle';
+            
+            setTimeout(() => toast.classList.remove('show'), 3000);
+        }
+        
+        let countdownInterval;
+        function startCountdown(seconds) {
+            clearInterval(countdownInterval);
+            const timerElement = document.getElementById('timer');
+            let timeLeft = seconds;
+            
+            countdownInterval = setInterval(() => {
+                if (timeLeft <= 0) {
+                    clearInterval(countdownInterval);
+                    document.getElementById('getKeySection').style.display = 'block';
+                    document.getElementById('countdown').style.display = 'none';
+                    return;
+                }
+                
+                timeLeft -= 1;
+                const h = Math.floor(timeLeft / 3600);
+                const m = Math.floor((timeLeft % 3600) / 60);
+                const s = Math.floor(timeLeft % 60);
+                
+                timerElement.textContent = `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+            }, 1000);
+        }
+        
+        async function checkCountdown() {
+            try {
+                const response = await fetch(`${SERVER_URL}/check-time-left`, {
+                    method: "POST",
+                    headers: {"Content-Type": "application/json"},
+                    body: JSON.stringify({})
+                });
+                
+                const data = await response.json();
+                
+                if (data.can_request) {
+                    document.getElementById('getKeySection').style.display = 'block';
+                    document.getElementById('countdown').style.display = 'none';
+                } else {
+                    document.getElementById('getKeySection').style.display = 'none';
+                    document.getElementById('countdown').style.display = 'block';
+                    startCountdown(data.time_left_seconds);
+                }
+            } catch(err) {
+                console.error("Không thể kết nối đến server:", err);
+            }
+        }
+        
+        document.getElementById('getKeyBtn').addEventListener('click', async function() {
+            this.disabled = true;
+            this.innerHTML = '<span class="btn-icon"><i class="fas fa-spinner fa-spin"></i></span> Đang tạo token...';
+            
+            try {
+                const response = await fetch(`${SERVER_URL}/request-token`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({})
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    // Chuyển hướng đến link vượt link
+                    window.location.href = data.link;
+                } else {
+                    document.getElementById('statusMessage').className = 'status warning';
+                    document.getElementById('statusMessage').innerHTML =
+                        `<i class="fas fa-clock"></i> ${data.message || data.error}`;
+                    showToast(data.message || data.error, 'warning');
+                    
+                    // Nếu có thời gian chờ, hiển thị countdown
+                    if (data.time_left_seconds) {
+                        document.getElementById('getKeySection').style.display = 'none';
+                        document.getElementById('countdown').style.display = 'block';
+                        startCountdown(data.time_left_seconds);
+                    }
+                }
+            } catch(err) {
+                document.getElementById('statusMessage').className = 'status error';
+                document.getElementById('statusMessage').innerHTML =
+                    '<i class="fas fa-exclamation-circle"></i> Không thể kết nối đến server';
+                showToast('Không thể kết nối đến server', 'error');
+            } finally {
+                this.disabled = false;
+                this.innerHTML = '<span class="btn-icon"><i class="fas fa-gamepad"></i></span> Lấy Key Ngay';
+            }
+        });
+        
+        document.getElementById('copyKeyBtn').addEventListener('click', function() {
+            const key = document.getElementById('keyText').textContent;
+            
+            navigator.clipboard.writeText(key).then(() => {
+                showToast('Key đã được sao chép vào clipboard!', 'success');
+                this.innerHTML = '<span class="btn-icon"><i class="fas fa-check"></i></span> Đã sao chép!';
+                
+                setTimeout(() => {
+                    this.innerHTML = '<span class="btn-icon"><i class="fas fa-copy"></i></span> Sao chép';
+                }, 2000);
+            }).catch(() => {
+                showToast('Sao chép thất bại!', 'error');
+            });
+        });
+        
+        // Kiểm tra xem URL có chứa key không (sau khi redirect từ final-getkey)
+        function checkUrlForKey() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const key = urlParams.get('key');
+            
+            if (key) {
+                document.getElementById('keyText').textContent = key;
+                document.getElementById('keyContainer').style.display = 'block';
+                document.getElementById('statusMessage').className = 'status success';
+                document.getElementById('statusMessage').innerHTML =
+                    `<i class="fas fa-check-circle"></i> Đã nhận key thành công!`;
+            }
+        }
+        
+        window.addEventListener('load', () => {
+            createBubbles();
+            checkCountdown();
+            checkUrlForKey();
+        });
+    </script>
 </body>
 </html>
