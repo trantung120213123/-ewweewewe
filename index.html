@@ -1,236 +1,372 @@
-<!DOCTYPE html>
-<html lang="vi">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hệ Thống Key - Roblox Premium</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style>
-        :root {
-            --primary: #5865F2;
-            --primary-gradient: linear-gradient(135deg, #5865F2, #8345F5);
-            --success: #57F287;
-            --danger: #ED4245;
-            --warning: #FEE75C;
-            --dark: #2C2F33;
-            --darker: #23272A;
-            --light: #F5F5F5;
-        }
-        * {margin:0;padding:0;box-sizing:border-box;font-family:'Poppins','Segoe UI',sans-serif;}
-        body {background:linear-gradient(135deg,var(--dark),var(--darker));color:var(--light);min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px;overflow-x:hidden;}
-        .background-bubbles{position:fixed;top:0;left:0;width:100%;height:100%;z-index:-1;overflow:hidden;}
-        .bubble{position:absolute;border-radius:50%;background:rgba(88,101,242,0.1);animation:float 15s infinite ease-in-out;}
-        @keyframes float{0%,100%{transform:translateY(0) rotate(0deg);}50%{transform:translateY(-20px) rotate(180deg);}}
-        .header{text-align:center;margin-bottom:20px;}
-        .logo{font-size:40px;margin-bottom:10px;background:var(--primary-gradient);-webkit-background-clip:text;-webkit-text-fill-color:transparent;filter:drop-shadow(0 5px 15px rgba(88,101,242,0.4));}
-        .container{background:rgba(0,0,0,0.5);backdrop-filter:blur(12px);border-radius:20px;padding:30px;width:100%;max-width:500px;box-shadow:0 15px 35px rgba(0,0,0,0.3);text-align:center;position:relative;overflow:hidden;z-index:10;}
-        h1{margin-bottom:20px;background:var(--primary-gradient);-webkit-background-clip:text;-webkit-text-fill-color:transparent;font-size:32px;font-weight:800;text-shadow:0 2px 10px rgba(88,101,242,0.3);}
-        p{margin-bottom:25px;line-height:1.6;color:rgba(255,255,255,0.8);}
-        .key-box{background:rgba(255,255,255,0.08);padding:15px;border-radius:12px;margin:20px 0;display:flex;justify-content:space-between;align-items:center;border:1px solid rgba(255,255,255,0.1);}
-        .key-text{font-family:'Courier New',monospace;font-size:18px;letter-spacing:1px;overflow:hidden;text-overflow:ellipsis;font-weight:600;}
-        .btn{background:var(--primary-gradient);color:white;border:none;padding:14px 28px;border-radius:12px;cursor:pointer;font-size:16px;font-weight:600;transition:all 0.3s ease;display:inline-flex;align-items:center;justify-content:center;box-shadow:0 5px 15px rgba(88,101,242,0.3);}
-        .btn:hover{transform:translateY(-3px);box-shadow:0 8px 20px rgba(88,101,242,0.4);}
-        .btn-success{background:linear-gradient(135deg,var(--success),#2dc46a);}
-        .btn:disabled{opacity:0.7;cursor:not-allowed;}
-        .btn-icon{margin-right:10px;font-size:18px;}
-        .status{margin-top:20px;padding:15px;border-radius:12px;text-align:left;border-left:4px solid transparent;}
-        .status.success{background-color:rgba(87,242,135,0.15);color:var(--success);border-left-color:var(--success);}
-        .status.error{background-color:rgba(237,66,69,0.15);color:var(--danger);border-left-color:var(--danger);}
-        .status.warning{background-color:rgba(254,231,92,0.15);color:var(--warning);border-left-color:var(--warning);}
-        .countdown{margin:20px 0;padding:15px;background:rgba(255,255,255,0.05);border-radius:12px;border:1px solid rgba(255,255,255,0.1);}
-        .countdown h3{margin-bottom:10px;color:var(--warning);display:flex;align-items:center;justify-content:center;font-size:18px;}
-        .timer{font-size:24px;font-weight:bold;color:var(--warning);font-family:'Courier New',monospace;letter-spacing:2px;}
-        .footer{margin-top:30px;text-align:center;color:rgba(255,255,255,0.6);font-size:12px;}
-        .toast{position:fixed;top:20px;right:20px;padding:15px 25px;background:rgba(25,25,35,0.95);backdrop-filter:blur(10px);color:white;border-radius:12px;box-shadow:0 5px 15px rgba(0,0,0,0.2);display:flex;align-items:center;z-index:1000;transform:translateX(100%);transition:transform 0.5s cubic-bezier(0.68,-0.55,0.27,1.55);border-left:4px solid var(--primary);max-width:350px;}
-        .toast.show{transform:translateX(0);}
-        @media(max-width:600px){.container{padding:20px;}h1{font-size:26px;}.key-box{flex-direction:column;gap:15px;}.btn{width:100%;}}
-    </style>
-</head>
-<body>
-    <div class="background-bubbles" id="bubbles"></div>
-    <div class="header"><div class="logo"><i class="fas fa-key"></i></div></div>
-    <div class="container">
-        <h1>luexkeysystem</h1>
-        <p>Get a free key to activate scripts in Roblox games. Key is valid for 24 hours.</p>
-        <div id="getKeySection">
-            <button id="getKeyBtn" class="btn"><span class="btn-icon"><i class="fas fa-gamepad"></i></span> Get Key</button>
-        </div>
-        <div id="countdown" class="countdown" style="display:none;">
-            <h3><i class="fas fa-clock"></i> You can get new key after:</h3>
-            <div id="timer" class="timer">00:00:00</div>
-        </div>
-        <div id="keyContainer" style="display:none;">
-            <div class="key-box">
-                <span id="keyText" class="key-text"></span>
-                <button id="copyKeyBtn" class="btn btn-success"><span class="btn-icon"><i class="fas fa-copy"></i></span> Sao chép</button>
-            </div>
-            <div id="statusMessage" class="status"></div>
-        </div>
-        <div class="instructions">
-            <h3><i class="fas fa-info-circle"></i> User manual:</h3>
-            <ol>
-                <li>Click "Get Key" to generate a new key</li>
-                <li>Copy the key using the "Copy" button"</li>
-                <li>Go to Roblox game, open script and enter key</li>
-                <li>Click "Check Key" to activate the script</li>
-                <li>Key valid for 24 hours</li>
-                <li>New key can only be obtained after 1 hour</li>
-            </ol>
-        </div>
-    </div>
-    <div class="footer"><p>© 2025 Hệ Thống Key Roblox Premium. All rights reserved.</p></div>
-    <div class="toast" id="toast"><i class="fas fa-check-circle"></i><div class="toast-message">Key copied successfully!</div></div>
+const express = require('express');
+const cors = require('cors');
+const sqlite3 = require('sqlite3').verbose();
 
-    <script>
-    const SERVER_URL = 'https://serverkeytrantung.onrender.com'; // Thay bằng server của bạn
+const app = express();
+const PORT = process.env.PORT || 3000;
 
-    function generateHWID() {
-        const components = [
-            navigator.userAgent,
-            navigator.platform,
-            navigator.hardwareConcurrency,
-            screen.width + 'x' + screen.height,
-            navigator.language,
-            new Date().getTimezoneOffset()
-        ];
-        let hwid = components.join('|');
-        let hash = 0;
-        for (let i = 0; i < hwid.length; i++) {
-            const char = hwid.charCodeAt(i);
-            hash = ((hash << 5) - hash) + char;
-            hash = hash & hash;
-        }
-        return 'hwid_' + Math.abs(hash).toString(16);
+// Middleware
+app.use(cors());
+app.use(express.json());
+
+// Khởi tạo database
+const db = new sqlite3.Database('./keys.db', (err) => {
+    if (err) {
+        console.error('Lỗi kết nối database:', err);
+    } else {
+        console.log('Kết nối SQLite thành công');
     }
+});
 
-    function createBubbles() {
-        const bubblesContainer = document.getElementById('bubbles');
-        for (let i = 0; i < 15; i++) {
-            const b = document.createElement('div');
-            b.classList.add('bubble');
-            const size = Math.random() * 100 + 20;
-            b.style.width = `${size}px`;
-            b.style.height = `${size}px`;
-            b.style.left = `${Math.random() * 100}%`;
-            b.style.top = `${Math.random() * 100}%`;
-            b.style.animationDelay = `${Math.random() * 10}s`;
-            b.style.animationDuration = `${15 + Math.random() * 15}s`;
-            bubblesContainer.appendChild(b);
-        }
+// Tạo bảng keys
+db.run(`CREATE TABLE IF NOT EXISTS keys (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    key TEXT UNIQUE NOT NULL,
+    hwid TEXT,
+    user_id TEXT,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    expires_at DATETIME NOT NULL,
+    used BOOLEAN DEFAULT FALSE
+)`);
+
+// Tạo bảng requests để theo dõi thời gian request
+db.run(`CREATE TABLE IF NOT EXISTS requests (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    hwid TEXT NOT NULL,
+    last_request_time DATETIME NOT NULL,
+    request_count INTEGER DEFAULT 1
+)`);
+
+// Hàm tạo key ngẫu nhiên
+function generateRandomKey(length = 5) {
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+    let result = '';
+    for (let i = 0; i < length; i++) {
+        result += chars.charAt(Math.floor(Math.random() * chars.length));
     }
+    return `key-${result}`;
+}
 
-    function showToast(message, type = 'success') {
-        const toast = document.getElementById('toast');
-        const toastIcon = toast.querySelector('i');
-        const toastMessage = toast.querySelector('.toast-message');
-        toastMessage.textContent = message;
-        toast.className = 'toast show ' + type;
-        if (type === 'success') toastIcon.className = 'fas fa-check-circle';
-        if (type === 'error') toastIcon.className = 'fas fa-exclamation-circle';
-        if (type === 'warning') toastIcon.className = 'fas fa-exclamation-triangle';
-        setTimeout(() => toast.classList.remove('show'), 3000);
-    }
-
-    let countdownInterval;
-    function startCountdown(ms) {
-        clearInterval(countdownInterval);
-        const timerElement = document.getElementById('timer');
-        let timeLeft = ms;
-        countdownInterval = setInterval(() => {
-            if (timeLeft <= 0) {
-                clearInterval(countdownInterval);
-                document.getElementById('getKeySection').style.display = 'block';
-                document.getElementById('countdown').style.display = 'none';
-                return;
-            }
-            timeLeft -= 1000;
-            const h = Math.floor(timeLeft / (1000*60*60));
-            const m = Math.floor((timeLeft % (1000*60*60)) / (1000*60));
-            const s = Math.floor((timeLeft % (1000*60)) / 1000);
-            timerElement.textContent = `${h.toString().padStart(2,'0')}:${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
-        }, 1000);
-    }
-
-    async function checkCountdown() {
-        const hwid = generateHWID();
-        try {
-            const response = await fetch(`${SERVER_URL}/check-time-left`, {
-                method: "POST",
-                headers: {"Content-Type":"application/json"},
-                body: JSON.stringify({ hwid })
+// API tạo key mới với kiểm tra HWID và thời gian 24h
+app.post('/get-key', (req, res) => {
+    try {
+        const { hwid } = req.body;
+        
+        if (!hwid) {
+            return res.status(400).json({ 
+                success: false, 
+                message: 'Thiếu HWID' 
             });
-            const data = await response.json();
-            if (data.can_request) {
-                document.getElementById('getKeySection').style.display = 'block';
-                document.getElementById('countdown').style.display = 'none';
-            } else {
-                document.getElementById('getKeySection').style.display = 'none';
-                document.getElementById('countdown').style.display = 'block';
-                const msLeft = data.time_left * 60 * 60 * 1000; // giờ -> ms
-                startCountdown(msLeft);
-            }
-        } catch(err) {
-            console.error("Unable to connect to server:", err);
         }
-    }
-
-    document.getElementById('getKeyBtn').addEventListener('click', async function() {
-        this.disabled = true;
-        this.innerHTML = '<span class="btn-icon"><i class="fas fa-spinner fa-spin"></i></span> Đang tạo key...';
-        const hwid = generateHWID();
-        try {
-            const response = await fetch(`${SERVER_URL}/get-key`, {
-                method: 'POST',
-                headers: { 'Content-Type':'application/json' },
-                body: JSON.stringify({ hwid })
-            });
-            const data = await response.json();
-            if (data.success) {
-                document.getElementById('getKeySection').style.display = 'none';
-                document.getElementById('countdown').style.display = 'block';
-                const expiresMs = new Date(data.expires) - new Date();
-                startCountdown(expiresMs);
-
-                document.getElementById('keyText').textContent = data.key;
-                document.getElementById('keyContainer').style.display = 'block';
-                document.getElementById('statusMessage').className = 'status success';
-                document.getElementById('statusMessage').innerHTML =
-                    `<i class="fas fa-check-circle"></i> Key created! Expires: ${new Date(data.expires).toLocaleString('vi-VI')}`;
-                showToast('Key đã được tạo thành công!', 'success');
-            } else {
-                document.getElementById('statusMessage').className = 'status warning';
-                document.getElementById('statusMessage').innerHTML =
-                    `<i class="fas fa-clock"></i> ${data.message}`;
-                showToast(data.message, 'warning');
+        
+        const now = new Date();
+        
+        // Kiểm tra xem HWID đã request key trước đó chưa
+        db.get(
+            'SELECT * FROM requests WHERE hwid = ?',
+            [hwid],
+            (err, row) => {
+                if (err) {
+                    console.error('Database error:', err);
+                    return res.status(500).json({ 
+                        success: false, 
+                        message: 'Lỗi server' 
+                    });
+                }
+                
+                if (row) {
+                    // Kiểm tra thời gian từ lần request cuối
+                    const lastRequestTime = new Date(row.last_request_time);
+                    const timeDiff = now - lastRequestTime;
+                    const hoursDiff = timeDiff / (1000 * 60 * 60);
+                    
+                    if (hoursDiff < 1) {
+                        const timeLeft = 1 - hoursDiff;
+                        const hoursLeft = Math.floor(timeLeft);
+                        const minutesLeft = Math.floor((timeLeft - hoursLeft) * 60);
+                        
+                        return res.status(429).json({ 
+                            success: false, 
+                            message: `Bạn phải chờ ${hoursLeft} giờ ${minutesLeft} phút nữa để lấy key mới`,
+                            time_left: timeLeft
+                        });
+                    }
+                    
+                    // Cập nhật thời gian request
+                    db.run(
+                        'UPDATE requests SET last_request_time = ?, request_count = request_count + 1 WHERE hwid = ?',
+                        [now.toISOString(), hwid],
+                        (err) => {
+                            if (err) {
+                                console.error('Update request error:', err);
+                            }
+                        }
+                    );
+                } else {
+                    // Thêm request mới
+                    db.run(
+                        'INSERT INTO requests (hwid, last_request_time) VALUES (?, ?)',
+                        [hwid, now.toISOString()],
+                        (err) => {
+                            if (err) {
+                                console.error('Insert request error:', err);
+                            }
+                        }
+                    );
+                }
+                
+                // Tạo key mới
+                const newKey = generateRandomKey(5);
+                const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 giờ
+                
+                db.run(
+                    'INSERT INTO keys (key, hwid, expires_at) VALUES (?, ?, ?)',
+                    [newKey, hwid, expiresAt.toISOString()],
+                    function(err) {
+                        if (err) {
+                            console.error('Insert key error:', err);
+                            return res.status(500).json({ 
+                                success: false, 
+                                message: 'Lỗi khi tạo key' 
+                            });
+                        }
+                        
+                        res.json({ 
+                            success: true, 
+                            key: newKey, 
+                            expires: expiresAt.toISOString(),
+                            message: 'Key đã được tạo thành công'
+                        });
+                    }
+                );
             }
-        } catch(err) {
-            document.getElementById('statusMessage').className = 'status error';
-            document.getElementById('statusMessage').innerHTML =
-                '<i class="fas fa-exclamation-circle"></i> Unable to connect to server';
-            showToast('Unable to connect to server', 'error');
-        } finally {
-            this.disabled = false;
-            this.innerHTML = '<span class="btn-icon"><i class="fas fa-gamepad"></i></span> Get Key';
-        }
-    });
-
-    document.getElementById('copyKeyBtn').addEventListener('click', function() {
-        const key = document.getElementById('keyText').textContent;
-        navigator.clipboard.writeText(key).then(() => {
-            showToast('Key has been copied to clipboard!', 'success');
-            this.innerHTML = '<span class="btn-icon"><i class="fas fa-check"></i></span> Copy successfully!';
-            setTimeout(() => {
-                this.innerHTML = '<span class="btn-icon"><i class="fas fa-copy"></i></span> Copy';
-            }, 2000);
-        }).catch(() => {
-            showToast('Sao chép thất bại!', 'error');
+        );
+    } catch (error) {
+        console.error('Error in /get-key:', error);
+        res.status(500).json({ 
+            success: false, 
+            message: 'Lỗi server nội bộ' 
         });
-    });
+    }
+});
 
-    window.addEventListener('load', () => {
-        createBubbles();
-        checkCountdown();
+// API xác thực key (lưu user_id khi verify)
+app.post('/verify-key', (req, res) => {
+    try {
+        const { key, user_id } = req.body;
+        
+        if (!key) {
+            return res.json({ 
+                valid: false, 
+                reason: 'Thiếu key' 
+            });
+        }
+        
+        if (!user_id) {
+            return res.json({ 
+                valid: false, 
+                reason: 'Thiếu user_id' 
+            });
+        }
+        
+        db.get(
+            'SELECT * FROM keys WHERE key = ?',
+            [key],
+            (err, row) => {
+                if (err) {
+                    console.error('Database error:', err);
+                    return res.status(500).json({ 
+                        valid: false, 
+                        reason: 'Lỗi server' 
+                    });
+                }
+                
+                if (!row) {
+                    return res.json({ 
+                        valid: false, 
+                        reason: 'Key không tồn tại' 
+                    });
+                }
+                
+                // Kiểm tra hết hạn
+                const now = new Date();
+                const expiresAt = new Date(row.expires_at);
+                if (now > expiresAt) {
+                    return res.json({ 
+                        valid: false, 
+                        reason: 'Key đã hết hạn' 
+                    });
+                }
+                
+                if (row.used) {
+                    // Kiểm tra nếu key đã được sử dụng bởi user khác
+                    if (row.user_id !== user_id) {
+                        return res.json({ 
+                            valid: false, 
+                            reason: 'Key đã được sử dụng bởi user khác' 
+                        });
+                    }
+                    // Nếu là cùng user thì vẫn hợp lệ
+                    return res.json({ 
+                        valid: true,
+                        user_id: row.user_id,
+                        created_at: row.created_at,
+                        expires_at: row.expires_at
+                    });
+                }
+                
+                // Lưu user_id và đánh dấu đã sử dụng
+                db.run(
+                    'UPDATE keys SET used = TRUE, user_id = ? WHERE key = ?',
+                    [user_id, key],
+                    function(err) {
+                        if (err) {
+                            console.error('Lỗi khi cập nhật key:', err);
+                        }
+                    }
+                );
+                
+                res.json({ 
+                    valid: true,
+                    user_id: user_id,
+                    created_at: row.created_at,
+                    expires_at: row.expires_at
+                });
+            }
+        );
+    } catch (error) {
+        console.error('Error in /verify-key:', error);
+        res.status(500).json({ 
+            valid: false, 
+            reason: 'Lỗi server nội bộ' 
+        });
+    }
+});
+
+// API kiểm tra key info
+app.get('/key-info/:key', (req, res) => {
+    const { key } = req.params;
+    
+    db.get(
+        'SELECT * FROM keys WHERE key = ?',
+        [key],
+        (err, row) => {
+            if (err) {
+                return res.status(500).json({ 
+                    error: 'Lỗi database' 
+                });
+            }
+            
+            if (!row) {
+                return res.json({ 
+                    exists: false,
+                    message: 'Key không tồn tại'
+                });
+            }
+            
+            res.json({
+                exists: true,
+                key: row.key,
+                user_id: row.user_id,
+                hwid: row.hwid,
+                created_at: row.created_at,
+                expires_at: row.expires_at,
+                used: row.used === 1,
+                is_expired: new Date() > new Date(row.expires_at)
+            });
+        }
+    );
+});
+
+// API kiểm tra thời gian chờ còn lại theo HWID
+app.post('/check-time-left', (req, res) => {
+    try {
+        const { hwid } = req.body;
+        
+        if (!hwid) {
+            return res.status(400).json({ 
+                success: false, 
+                message: 'Thiếu HWID' 
+            });
+        }
+        
+        db.get(
+            'SELECT * FROM requests WHERE hwid = ?',
+            [hwid],
+            (err, row) => {
+                if (err) {
+                    console.error('Database error:', err);
+                    return res.status(500).json({ 
+                        success: false, 
+                        message: 'Lỗi server' 
+                    });
+                }
+                
+                if (!row) {
+                    return res.json({ 
+                        can_request: true,
+                        time_left: 0,
+                        message: 'Bạn có thể lấy key ngay bây giờ'
+                    });
+                }
+                
+                const lastRequestTime = new Date(row.last_request_time);
+                const now = new Date();
+                const timeDiff = now - lastRequestTime;
+                const hoursDiff = timeDiff / (1000 * 60 * 60);
+                
+                if (hoursDiff >= 1) {
+                    return res.json({ 
+                        can_request: true,
+                        time_left: 0,
+                        message: 'Bạn có thể lấy key ngay bây giờ'
+                    });
+                } else {
+                    const timeLeft = 1 - hoursDiff;
+                    const hoursLeft = Math.floor(timeLeft);
+                    const minutesLeft = Math.floor((timeLeft - hoursLeft) * 60);
+                    
+                    return res.json({ 
+                        can_request: false,
+                        time_left: timeLeft,
+                        message: `Bạn phải chờ ${hoursLeft} giờ ${minutesLeft} phút nữa để lấy key mới`
+                    });
+                }
+            }
+        );
+    } catch (error) {
+        console.error('Error in /check-time-left:', error);
+        res.status(500).json({ 
+            success: false, 
+            message: 'Lỗi server nội bộ' 
+        });
+    }
+});
+
+// Health check endpoint
+app.get('/health', (req, res) => {
+    res.json({ 
+        status: 'OK', 
+        timestamp: new Date().toISOString(),
+        service: 'Key System API'
     });
-    </script>
-</body>
-</html>
+});
+
+// Root endpoint
+app.get('/', (req, res) => {
+    res.json({ 
+        message: 'Key System API đang hoạt động',
+        endpoints: {
+            health: '/health',
+            getKey: 'POST /get-key',
+            verifyKey: 'POST /verify-key',
+            keyInfo: 'GET /key-info/:key',
+            checkTimeLeft: 'POST /check-time-left'
+        }
+    });
+});
+
+// Khởi động server
+app.listen(PORT, () => {
+    console.log(`🚀 Server đang chạy trên port ${PORT}`);
+});
