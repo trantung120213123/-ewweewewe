@@ -1,372 +1,233 @@
-const express = require('express');
-const cors = require('cors');
-const sqlite3 = require('sqlite3').verbose();
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>luexkeysystem — Key System</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+  <style>
+    /* Styles (kept concise) */
+    :root{--p:#5865F2;--pg:linear-gradient(135deg,#5865F2,#8345F5);--success:#57F287;--danger:#ED4245;--bg1:#2C2F33;--bg2:#23272A;--light:#F5F5F5}
+    *{margin:0;padding:0;box-sizing:border-box;font-family:Poppins,Segoe UI,system-ui}
+    body{background:linear-gradient(135deg,var(--bg1),var(--bg2));color:var(--light);min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px}
+    .container{width:100%;max-width:760px;background:rgba(0,0,0,0.5);padding:28px;border-radius:18px;backdrop-filter:blur(8px);box-shadow:0 12px 40px rgba(0,0,0,0.4)}
+    .logo{font-size:40px;margin-bottom:8px;background:var(--pg);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+    h1{font-size:28px;margin-bottom:6px;background:var(--pg);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+    p{color:rgba(255,255,255,0.8);margin-bottom:12px}
+    .btn{background:var(--pg);border:none;color:#fff;padding:10px 16px;border-radius:12px;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;gap:8px}
+    .btn-suc{background:linear-gradient(135deg,var(--success),#2dc46a)}
+    .key-row{display:flex;justify-content:space-between;align-items:center;padding:12px;border-radius:12px;background:rgba(255,255,255,0.04);margin-top:12px}
+    input{width:100%;padding:10px;border-radius:8px;border:1px solid rgba(255,255,255,0.06);background:transparent;color:var(--light)}
+    .cols{display:flex;gap:16px;margin-top:16px;flex-wrap:wrap}
+    .card{flex:1 1 240px;background:rgba(255,255,255,0.03);padding:12px;border-radius:12px}
+    .small{font-size:13px;color:rgba(255,255,255,0.8)}
+    .timer{font-family:monospace;font-weight:800;color:#FEE75C}
+    .toast{position:fixed;top:18px;right:18px;background:rgba(15,15,20,0.95);padding:12px 16px;border-radius:10px;color:#fff;transform:translateX(120%);transition:transform .45s cubic-bezier(.68,-.55,.27,1.55);z-index:999}
+    .toast.show{transform:translateX(0)}
+    .overlay{position:fixed;inset:0;background:rgba(0,0,0,0.6);display:flex;align-items:center;justify-content:center;z-index:200;backdrop-filter:blur(3px)}
+    .modal{background:rgba(0,0,0,0.55);padding:18px;border-radius:12px;max-width:520px;width:92%;text-align:center}
+    @media(max-width:720px){.cols{flex-direction:column}}
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="logo"><i class="fas fa-key"></i></div>
+    <h1>luexkeysystem</h1>
+    <p>Get a free key to activate scripts in Roblox games. Key valid 24 hours. New key every 1 hour per device (HWID).</p>
 
-const app = express();
-const PORT = process.env.PORT || 3000;
+    <div id="getKeySection" style="text-align:center">
+      <button id="getKeyBtn" class="btn"><i class="fas fa-gamepad"></i> Get Key</button>
+    </div>
 
-// Middleware
-app.use(cors());
-app.use(express.json());
+    <div id="countdown" style="display:none;margin-top:12px">
+      <div class="small">You can get a new key after:</div>
+      <div class="timer" id="timer">00:00:00</div>
+    </div>
 
-// Khởi tạo database
-const db = new sqlite3.Database('./keys.db', (err) => {
-    if (err) {
-        console.error('Lỗi kết nối database:', err);
-    } else {
-        console.log('Kết nối SQLite thành công');
+    <div id="keyContainer" style="display:none;margin-top:12px">
+      <div class="key-row">
+        <div style="font-family:monospace;font-weight:800" id="keyText"></div>
+        <div>
+          <button id="copyKeyBtn" class="btn btn-suc"><i class="fas fa-copy"></i> Copy</button>
+        </div>
+      </div>
+      <div id="statusMessage" class="small" style="margin-top:8px"></div>
+    </div>
+
+    <div class="cols">
+      <div class="card">
+        <h4><i class="fas fa-info-circle"></i> Instructions</h4>
+        <ol style="padding-left:18px;margin-top:8px;color:rgba(255,255,255,0.85)">
+          <li>Click <b>Get Key</b> — you'll be redirected through Linkvertise (or direct) to complete the step.</li>
+          <li>After finishing, the redirect returns to this page with token; an overlay appears.</li>
+          <li>Press final <b>Get Key</b> in overlay to receive your key.</li>
+        </ol>
+      </div>
+
+      <div class="card">
+        <h4><i class="fas fa-shield-check"></i> Verify Key</h4>
+        <label class="small">Key</label>
+        <input id="verifyKeyInput" placeholder="Nhập key để check" />
+        <label class="small" style="margin-top:8px">User ID</label>
+        <input id="verifyUserIdInput" placeholder="Roblox user id" />
+        <button id="verifyBtn" class="btn" style="margin-top:10px"><i class="fas fa-check"></i> Check</button>
+        <div id="verifyResult" style="margin-top:10px"></div>
+      </div>
+
+      <div class="card">
+        <h4><i class="fas fa-info"></i> Key Info</h4>
+        <label class="small">Key</label>
+        <input id="infoKeyInput" placeholder="Nhập key để xem thông tin" />
+        <button id="infoBtn" class="btn" style="margin-top:10px"><i class="fas fa-info-circle"></i> Get Info</button>
+        <pre id="infoResult" style="display:none;margin-top:10px;background:rgba(0,0,0,0.25);padding:8px;border-radius:8px;color:#fff;"></pre>
+      </div>
+    </div>
+
+    <div style="margin-top:14px" class="small">© 2025 Luexkeysystem</div>
+  </div>
+
+  <div id="toast" class="toast"><i class="fas fa-check-circle"></i> <span id="toastMsg" style="margin-left:8px"></span></div>
+
+  <div id="finalOverlay" class="overlay" style="display:none">
+    <div class="modal">
+      <h3><i class="fas fa-flag-checkered"></i> Hoàn tất bước trung gian</h3>
+      <p class="small">Token đã được nhận từ link redirect. Bấm <b>Get Key</b> để lấy key (token 1 lần, 5 phút).</p>
+      <div style="margin-top:12px">
+        <button id="finalGetKeyBtn" class="btn"><i class="fas fa-download"></i> Get Key</button>
+        <button id="closeOverlayBtn" class="btn" style="margin-left:8px;background:rgba(255,255,255,0.06)"><i class="fas fa-times"></i> Cancel</button>
+      </div>
+      <div id="finalStatus" class="small" style="margin-top:10px"></div>
+    </div>
+  </div>
+
+  <script>
+    // =========================
+    // SERVER_URL:
+    // By default we use window.location.origin which matches Render's same-origin deployment.
+    // If you want to hardcode your domain, replace the line below with:
+    // const SERVER_URL = "https://your-domain.com";
+    // =========================
+    const SERVER_URL = window.location.origin;
+
+    // HWID generator (same as earlier)
+    function generateHWID(){
+      const components = [navigator.userAgent||'', navigator.platform||'', navigator.hardwareConcurrency||'', (screen? screen.width + 'x' + screen.height : ''), navigator.language||'', new Date().getTimezoneOffset()];
+      let hwid = components.join('|'), hash = 0;
+      for (let i=0;i<hwid.length;i++){ const c = hwid.charCodeAt(i); hash = ((hash<<5)-hash)+c; hash = hash & hash; }
+      return 'hwid_' + Math.abs(hash).toString(16);
     }
-});
 
-// Tạo bảng keys
-db.run(`CREATE TABLE IF NOT EXISTS keys (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    key TEXT UNIQUE NOT NULL,
-    hwid TEXT,
-    user_id TEXT,
-    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-    expires_at DATETIME NOT NULL,
-    used BOOLEAN DEFAULT FALSE
-)`);
-
-// Tạo bảng requests để theo dõi thời gian request
-db.run(`CREATE TABLE IF NOT EXISTS requests (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    hwid TEXT NOT NULL,
-    last_request_time DATETIME NOT NULL,
-    request_count INTEGER DEFAULT 1
-)`);
-
-// Hàm tạo key ngẫu nhiên
-function generateRandomKey(length = 5) {
-    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-    let result = '';
-    for (let i = 0; i < length; i++) {
-        result += chars.charAt(Math.floor(Math.random() * chars.length));
+    function showToast(msg){
+      const t=document.getElementById('toast'); document.getElementById('toastMsg').textContent = msg; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),3000);
     }
-    return `key-${result}`;
-}
 
-// API tạo key mới với kiểm tra HWID và thời gian 24h
-app.post('/get-key', (req, res) => {
-    try {
-        const { hwid } = req.body;
-        
-        if (!hwid) {
-            return res.status(400).json({ 
-                success: false, 
-                message: 'Thiếu HWID' 
-            });
-        }
-        
-        const now = new Date();
-        
-        // Kiểm tra xem HWID đã request key trước đó chưa
-        db.get(
-            'SELECT * FROM requests WHERE hwid = ?',
-            [hwid],
-            (err, row) => {
-                if (err) {
-                    console.error('Database error:', err);
-                    return res.status(500).json({ 
-                        success: false, 
-                        message: 'Lỗi server' 
-                    });
-                }
-                
-                if (row) {
-                    // Kiểm tra thời gian từ lần request cuối
-                    const lastRequestTime = new Date(row.last_request_time);
-                    const timeDiff = now - lastRequestTime;
-                    const hoursDiff = timeDiff / (1000 * 60 * 60);
-                    
-                    if (hoursDiff < 1) {
-                        const timeLeft = 1 - hoursDiff;
-                        const hoursLeft = Math.floor(timeLeft);
-                        const minutesLeft = Math.floor((timeLeft - hoursLeft) * 60);
-                        
-                        return res.status(429).json({ 
-                            success: false, 
-                            message: `Bạn phải chờ ${hoursLeft} giờ ${minutesLeft} phút nữa để lấy key mới`,
-                            time_left: timeLeft
-                        });
-                    }
-                    
-                    // Cập nhật thời gian request
-                    db.run(
-                        'UPDATE requests SET last_request_time = ?, request_count = request_count + 1 WHERE hwid = ?',
-                        [now.toISOString(), hwid],
-                        (err) => {
-                            if (err) {
-                                console.error('Update request error:', err);
-                            }
-                        }
-                    );
-                } else {
-                    // Thêm request mới
-                    db.run(
-                        'INSERT INTO requests (hwid, last_request_time) VALUES (?, ?)',
-                        [hwid, now.toISOString()],
-                        (err) => {
-                            if (err) {
-                                console.error('Insert request error:', err);
-                            }
-                        }
-                    );
-                }
-                
-                // Tạo key mới
-                const newKey = generateRandomKey(5);
-                const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 giờ
-                
-                db.run(
-                    'INSERT INTO keys (key, hwid, expires_at) VALUES (?, ?, ?)',
-                    [newKey, hwid, expiresAt.toISOString()],
-                    function(err) {
-                        if (err) {
-                            console.error('Insert key error:', err);
-                            return res.status(500).json({ 
-                                success: false, 
-                                message: 'Lỗi khi tạo key' 
-                            });
-                        }
-                        
-                        res.json({ 
-                            success: true, 
-                            key: newKey, 
-                            expires: expiresAt.toISOString(),
-                            message: 'Key đã được tạo thành công'
-                        });
-                    }
-                );
-            }
-        );
-    } catch (error) {
-        console.error('Error in /get-key:', error);
-        res.status(500).json({ 
-            success: false, 
-            message: 'Lỗi server nội bộ' 
-        });
+    function createBubbles(){
+      for(let i=0;i<12;i++){ const d=document.createElement('div'); d.style.position='absolute'; d.style.width=(Math.random()*100+20)+'px'; d.style.height=d.style.width; d.style.left=Math.random()*100+'%'; d.style.top=Math.random()*100+'%'; d.style.borderRadius='50%'; d.style.background='rgba(88,101,242,0.06)'; d.style.zIndex='-1'; document.body.appendChild(d); }
     }
-});
 
-// API xác thực key (lưu user_id khi verify)
-app.post('/verify-key', (req, res) => {
-    try {
-        const { key, user_id } = req.body;
-        
-        if (!key) {
-            return res.json({ 
-                valid: false, 
-                reason: 'Thiếu key' 
-            });
-        }
-        
-        if (!user_id) {
-            return res.json({ 
-                valid: false, 
-                reason: 'Thiếu user_id' 
-            });
-        }
-        
-        db.get(
-            'SELECT * FROM keys WHERE key = ?',
-            [key],
-            (err, row) => {
-                if (err) {
-                    console.error('Database error:', err);
-                    return res.status(500).json({ 
-                        valid: false, 
-                        reason: 'Lỗi server' 
-                    });
-                }
-                
-                if (!row) {
-                    return res.json({ 
-                        valid: false, 
-                        reason: 'Key không tồn tại' 
-                    });
-                }
-                
-                // Kiểm tra hết hạn
-                const now = new Date();
-                const expiresAt = new Date(row.expires_at);
-                if (now > expiresAt) {
-                    return res.json({ 
-                        valid: false, 
-                        reason: 'Key đã hết hạn' 
-                    });
-                }
-                
-                if (row.used) {
-                    // Kiểm tra nếu key đã được sử dụng bởi user khác
-                    if (row.user_id !== user_id) {
-                        return res.json({ 
-                            valid: false, 
-                            reason: 'Key đã được sử dụng bởi user khác' 
-                        });
-                    }
-                    // Nếu là cùng user thì vẫn hợp lệ
-                    return res.json({ 
-                        valid: true,
-                        user_id: row.user_id,
-                        created_at: row.created_at,
-                        expires_at: row.expires_at
-                    });
-                }
-                
-                // Lưu user_id và đánh dấu đã sử dụng
-                db.run(
-                    'UPDATE keys SET used = TRUE, user_id = ? WHERE key = ?',
-                    [user_id, key],
-                    function(err) {
-                        if (err) {
-                            console.error('Lỗi khi cập nhật key:', err);
-                        }
-                    }
-                );
-                
-                res.json({ 
-                    valid: true,
-                    user_id: user_id,
-                    created_at: row.created_at,
-                    expires_at: row.expires_at
-                });
-            }
-        );
-    } catch (error) {
-        console.error('Error in /verify-key:', error);
-        res.status(500).json({ 
-            valid: false, 
-            reason: 'Lỗi server nội bộ' 
-        });
+    // countdown logic
+    let countdownInterval;
+    function startCountdown(ms){
+      clearInterval(countdownInterval);
+      const timerEl=document.getElementById('timer'); let timeLeft=ms;
+      countdownInterval=setInterval(()=>{ if (timeLeft<=0){ clearInterval(countdownInterval); document.getElementById('getKeySection').style.display='block'; document.getElementById('countdown').style.display='none'; return; } timeLeft-=1000; const h=Math.floor(timeLeft/(1000*60*60)), m=Math.floor((timeLeft%(1000*60*60))/(1000*60)), s=Math.floor((timeLeft%(1000*60))/1000); timerEl.textContent = `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`; },1000);
     }
-});
 
-// API kiểm tra key info
-app.get('/key-info/:key', (req, res) => {
-    const { key } = req.params;
-    
-    db.get(
-        'SELECT * FROM keys WHERE key = ?',
-        [key],
-        (err, row) => {
-            if (err) {
-                return res.status(500).json({ 
-                    error: 'Lỗi database' 
-                });
-            }
-            
-            if (!row) {
-                return res.json({ 
-                    exists: false,
-                    message: 'Key không tồn tại'
-                });
-            }
-            
-            res.json({
-                exists: true,
-                key: row.key,
-                user_id: row.user_id,
-                hwid: row.hwid,
-                created_at: row.created_at,
-                expires_at: row.expires_at,
-                used: row.used === 1,
-                is_expired: new Date() > new Date(row.expires_at)
-            });
-        }
-    );
-});
-
-// API kiểm tra thời gian chờ còn lại theo HWID
-app.post('/check-time-left', (req, res) => {
-    try {
-        const { hwid } = req.body;
-        
-        if (!hwid) {
-            return res.status(400).json({ 
-                success: false, 
-                message: 'Thiếu HWID' 
-            });
-        }
-        
-        db.get(
-            'SELECT * FROM requests WHERE hwid = ?',
-            [hwid],
-            (err, row) => {
-                if (err) {
-                    console.error('Database error:', err);
-                    return res.status(500).json({ 
-                        success: false, 
-                        message: 'Lỗi server' 
-                    });
-                }
-                
-                if (!row) {
-                    return res.json({ 
-                        can_request: true,
-                        time_left: 0,
-                        message: 'Bạn có thể lấy key ngay bây giờ'
-                    });
-                }
-                
-                const lastRequestTime = new Date(row.last_request_time);
-                const now = new Date();
-                const timeDiff = now - lastRequestTime;
-                const hoursDiff = timeDiff / (1000 * 60 * 60);
-                
-                if (hoursDiff >= 1) {
-                    return res.json({ 
-                        can_request: true,
-                        time_left: 0,
-                        message: 'Bạn có thể lấy key ngay bây giờ'
-                    });
-                } else {
-                    const timeLeft = 1 - hoursDiff;
-                    const hoursLeft = Math.floor(timeLeft);
-                    const minutesLeft = Math.floor((timeLeft - hoursLeft) * 60);
-                    
-                    return res.json({ 
-                        can_request: false,
-                        time_left: timeLeft,
-                        message: `Bạn phải chờ ${hoursLeft} giờ ${minutesLeft} phút nữa để lấy key mới`
-                    });
-                }
-            }
-        );
-    } catch (error) {
-        console.error('Error in /check-time-left:', error);
-        res.status(500).json({ 
-            success: false, 
-            message: 'Lỗi server nội bộ' 
-        });
+    async function checkCountdown(){
+      const hwid = generateHWID();
+      try{
+        const r = await fetch(`${SERVER_URL}/check-time-left`, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ hwid }) });
+        const d = await r.json();
+        if (d.can_request){ document.getElementById('getKeySection').style.display='block'; document.getElementById('countdown').style.display='none'; }
+        else { document.getElementById('getKeySection').style.display='none'; document.getElementById('countdown').style.display='block'; startCountdown(d.time_left*60*60*1000); }
+      }catch(e){ console.error(e); }
     }
-});
 
-// Health check endpoint
-app.get('/health', (req, res) => {
-    res.json({ 
-        status: 'OK', 
-        timestamp: new Date().toISOString(),
-        service: 'Key System API'
+    // Request token -> redirect via Linkvertise or direct
+    document.getElementById('getKeyBtn').addEventListener('click', async function(){
+      this.disabled=true; const old=this.innerHTML; this.innerHTML='<i class="fas fa-spinner fa-spin"></i> Creating...';
+      const hwid = generateHWID();
+      try{
+        const res = await fetch(`${SERVER_URL}/request-token`, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ hwid }) });
+        const data = await res.json();
+        if (data.success && data.redirect) {
+          // If you use Linkvertise, set LINKVERTISE_BASE on server side so `data.redirect` is proper.
+          // Here we redirect to the returned 'redirect' (could be linkvertise or direct returnUrl).
+          window.location.href = data.redirect;
+          return;
+        } else {
+          document.getElementById('statusMessage').textContent = data.message || 'Không thể tạo token';
+          showToast(data.message || 'Không thể tạo token');
+        }
+      }catch(e){ console.error(e); document.getElementById('statusMessage').textContent = 'Không thể kết nối server'; showToast('Không thể kết nối server'); }
+      finally { this.disabled=false; this.innerHTML=old; }
     });
-});
 
-// Root endpoint
-app.get('/', (req, res) => {
-    res.json({ 
-        message: 'Key System API đang hoạt động',
-        endpoints: {
-            health: '/health',
-            getKey: 'POST /get-key',
-            verifyKey: 'POST /verify-key',
-            keyInfo: 'GET /key-info/:key',
-            checkTimeLeft: 'POST /check-time-left'
-        }
+    // handle return from linkvertise: ?token=...&hwid=...
+    function getQueryParams(){ return Object.fromEntries(new URLSearchParams(window.location.search).entries()); }
+
+    async function handleReturnToken(){
+      const q = getQueryParams();
+      if (q.token && q.hwid){
+        document.getElementById('finalOverlay').style.display='flex';
+        document.getElementById('finalStatus').textContent='';
+        document.getElementById('finalGetKeyBtn').onclick = async function(){
+          this.disabled=true; const old=this.innerHTML; this.innerHTML='<i class="fas fa-spinner fa-spin"></i> Getting...';
+          try{
+            const r = await fetch(`${SERVER_URL}/get-key`, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ token: q.token, hwid: q.hwid }) });
+            const d = await r.json();
+            if (d.success){
+              document.getElementById('keyText').textContent = d.key;
+              document.getElementById('keyContainer').style.display='block';
+              document.getElementById('statusMessage').textContent = 'Key created — expires ' + new Date(d.expires).toLocaleString();
+              showToast('Key đã được tạo!');
+              if (history.replaceState){ const u=new URL(window.location.href); u.searchParams.delete('token'); u.searchParams.delete('hwid'); history.replaceState(null,'',u.pathname + u.search); }
+              document.getElementById('finalOverlay').style.display='none';
+            } else {
+              document.getElementById('finalStatus').textContent = d.message || 'Lỗi khi lấy key';
+              showToast(d.message || 'Lỗi khi lấy key');
+            }
+          }catch(e){ console.error(e); document.getElementById('finalStatus').textContent = 'Lỗi kết nối server'; showToast('Lỗi kết nối server'); }
+          finally{ this.disabled=false; this.innerHTML=old; }
+        };
+
+        document.getElementById('closeOverlayBtn').onclick = function(){
+          document.getElementById('finalOverlay').style.display='none';
+          if (history.replaceState){ const u=new URL(window.location.href); u.searchParams.delete('token'); u.searchParams.delete('hwid'); history.replaceState(null,'',u.pathname + u.search); }
+        };
+      }
+    }
+
+    // copy key
+    document.getElementById('copyKeyBtn').addEventListener('click', function(){ const k=document.getElementById('keyText').textContent; if(!k) return showToast('No key'); navigator.clipboard.writeText(k).then(()=> showToast('Copied')).catch(()=> showToast('Copy failed')); });
+
+    // verify key
+    document.getElementById('verifyBtn').addEventListener('click', async function(){
+      const key=document.getElementById('verifyKeyInput').value.trim();
+      const user_id=document.getElementById('verifyUserIdInput').value.trim();
+      const out=document.getElementById('verifyResult');
+      if(!key || !user_id){ out.textContent='Nhập key và user_id'; out.style.color='#FEE75C'; return; }
+      try{
+        const r = await fetch(`${SERVER_URL}/verify-key`, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ key, user_id }) });
+        const d = await r.json();
+        if (d.valid){ out.textContent = 'Key hợp lệ — expires: ' + d.expires_at; out.style.color='#57F287'; }
+        else { out.textContent = d.reason || 'Invalid'; out.style.color='#ff8080'; }
+      }catch(e){ out.textContent='Lỗi kết nối'; out.style.color='#ff8080'; }
     });
-});
 
-// Khởi động server
-app.listen(PORT, () => {
-    console.log(`🚀 Server đang chạy trên port ${PORT}`);
-});
+    // key info
+    document.getElementById('infoBtn').addEventListener('click', async function(){
+      const k=document.getElementById('infoKeyInput').value.trim();
+      const pre=document.getElementById('infoResult');
+      if(!k) return;
+      try {
+        const r = await fetch(`${SERVER_URL}/key-info/${encodeURIComponent(k)}`);
+        const d = await r.json();
+        pre.style.display='block'; pre.textContent = JSON.stringify(d, null, 2);
+      } catch(e) { pre.style.display='block'; pre.textContent='Lỗi kết nối'; }
+    });
+
+    window.addEventListener('load', () => { createBubbles(); checkCountdown(); handleReturnToken(); });
+  </script>
+</body>
+</html>
