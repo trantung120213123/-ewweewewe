@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KeyGen Nebula</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Space+Mono&display=swap" rel="stylesheet">
+    <style>
+        body {
+            background: radial-gradient(circle at center, #0a0f1f 0%, #020409 100%);
+            overflow: hidden;
+            font-family: 'Orbitron', sans-serif;
+        }
+        @keyframes neonGlow {
+            0%, 100% { box-shadow: 0 0 12px rgba(139, 92, 246, 0.6), 0 0 25px rgba(139, 92, 246, 0.4); }
+            50% { box-shadow: 0 0 30px rgba(139, 92, 246, 1), 0 0 50px rgba(139, 92, 246, 0.7); }
+        }
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.08); }
+            100% { transform: scale(1); }
+        }
+        @keyframes slideIn {
+            from { transform: translateY(50px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        @keyframes particle {
+            0% { transform: translateY(0) scale(1); opacity: 1; }
+            100% { transform: translateY(-150vh) scale(0.3); opacity: 0; }
+        }
+        @keyframes characterWalk {
+            0% { background-position: 0 0; }
+            100% { background-position: -256px 0; }
+        }
+        @keyframes characterFloat {
+            0% { transform: translateY(0); }
+            50% { transform: translateY(-20px); }
+            100% { transform: translateY(0); }
+        }
+        @keyframes spaceshipFly {
+            0% { transform: translateX(0) translateY(0) rotate(0deg); }
+            50% { transform: translateX(60px) translateY(-30px) rotate(5deg); }
+            100% { transform: translateX(0) translateY(0) rotate(0deg); }
+        }
+        @keyframes beamPulse {
+            0% { opacity: 0.3; transform: scaleY(1); }
+            50% { opacity: 0.7; transform: scaleY(1.2); }
+            100% { opacity: 0.3; transform: scaleY(1); }
+        }
+        @keyframes orbGlow {
+            0% { box-shadow: 0 0 10px rgba(236, 72, 153, 0.5); }
+            50% { box-shadow: 0 0 20px rgba(236, 72, 153, 1), 0 0 30px rgba(236, 72, 153, 0.7); }
+            100% { box-shadow: 0 0 10px rgba(236, 72, 153, 0.5); }
+        }
+        .neon-glow { animation: neonGlow 1.2s infinite; }
+        .pulse { animation: pulse 1.6s infinite; }
+        .slide-in { animation: slideIn 1s ease-out; }
+        .gradient-bg { background: linear-gradient(135deg, #d946ef 0%, #f43f5e 100%); }
+        .card-bg { 
+            background: rgba(17, 24, 39, 0.92); 
+            backdrop-filter: blur(25px); 
+            border: 1px solid rgba(255, 255, 255, 0.2); 
+        }
+        .countdown { font-family: 'Space Mono', monospace; }
+        .particle {
+            position: absolute;
+            width: 6px;
+            height: 6px;
+            background: rgba(236, 72, 153, 0.9);
+            border-radius: 50%;
+            animation: particle 3.5s linear infinite;
+            pointer-events: none;
+        }
+        .stars {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+        }
+        .star {
+            position: absolute;
+            width: 3px;
+            height: 3px;
+            background: white;
+            border-radius: 50%;
+            animation: twinkle 2.5s infinite;
+        }
+        @keyframes twinkle {
+            0%, 100% { opacity: 0.5; }
+            50% { opacity: 1; }
+        }
+        .key-info {
+            transition: all 0.4s ease;
+        }
+        .key-info:hover {
+            background: rgba(255, 255, 255, 0.1);
+            transform: translateY(-4px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+        }
+        .character {
+            position: absolute;
+            width: 64px;
+            height: 64px;
+            background-size: 256px 64px;
+            animation: characterWalk 0.7s steps(4) infinite, characterFloat 2s ease-in-out infinite;
+            opacity: 0.5;
+            pointer-events: none;
+        }
+        .spaceship {
+            position: absolute;
+            width: 80px;
+            height: 80px;
+            background-size: contain;
+            background-repeat: no-repeat;
+            animation: spaceshipFly 4s ease-in-out infinite;
+            opacity: 0.7;
+            pointer-events: none;
+        }
+        .beam {
+            position: absolute;
+            width: 2px;
+            height: 100px;
+            background: linear-gradient(to bottom, rgba(139, 92, 246, 0.8), transparent);
+            animation: beamPulse 2s infinite;
+            pointer-events: none;
+        }
+        .orb {
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            background: radial-gradient(circle, #ec4899 0%, transparent 70%);
+            border-radius: 50%;
+            animation: orbGlow 1.5s infinite;
+            pointer-events: none;
+        }
+        .character-1 { background-image: url('https://opengameart.org/sites/default/files/hero_3.png'); }
+        .character-2 { background-image: url('https://opengameart.org/sites/default/files/herochar_spritesheet.png'); }
+        .spaceship-1 { background-image: url('https://opengameart.org/sites/default/files/spaceship_0.png'); }
+        .spaceship-2 { background-image: url('https://opengameart.org/sites/default/files/spaceship_1.png'); }
+    </style>
+</head>
+<body class="min-h-screen flex items-center justify-center p-6 relative">
+    <!-- Animated Background Elements -->
+    <div class="stars"></div>
+    <div class="particles"></div>
+    <div class="characters"></div>
+    <div class="spaceships"></div>
+    <div class="beams"></div>
+    <div class="orbs"></div>
+
+    <div class="w-full max-w-lg z-10">
+        <!-- Header -->
+        <div class="text-center mb-10 slide-in">
+            <h1 class="text-6xl font-extrabold bg-gradient-to-r from-purple-500 via-pink-500 to-red-500 bg-clip-text text-transparent tracking-tight">
+                <i class="fas fa-rocket mr-3"></i>KeyGen Nebula
+            </h1>
+            <p class="text-gray-300 mt-3 text-xl font-light">Unlock the Cosmos with Your Secure Key</p>
+        </div>
+
+        <!-- Status Display -->
+        <div id="statusDisplay" class="mb-8 hidden card-bg rounded-2xl p-8 neon-glow">
+            <p id="statusText" class="text-gray-200 text-center text-lg"></p>
+            <div id="countdownDisplay" class="countdown text-3xl font-bold text-pink-400 text-center mt-4"></div>
+        </div>
+
+        <!-- Key Display -->
+        <div id="keyDisplay" class="hidden mb-8 card-bg rounded-2xl p-8 neon-glow">
+            <h3 class="text-2xl font-semibold text-gray-200 mb-6 text-center">Nebula Key Details</h3>
+            <div class="space-y-4">
+                <div class="key-info bg-gray-900/50 rounded-lg p-4 flex items-center justify-between">
+                    <span class="text-gray-400">Key</span>
+                    <div class="flex items-center">
+                        <code id="generatedKey" class="text-lg font-mono text-green-400 break-all mr-3"></code>
+                        <button onclick="copyKey()" class="text-purple-400 hover:text-purple-300">
+                            <i class="fas fa-copy text-lg"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="key-info bg-gray-900/50 rounded-lg p-4 flex justify-between">
+                    <span class="text-gray-400">Created At</span>
+                    <span id="createdAt" class="text-gray-200"></span>
+                </div>
+                <div class="key-info bg-gray-900/50 rounded-lg p-4 flex justify-between">
+                    <span class="text-gray-400">Expires At</span>
+                    <span id="expiresAt" class="text-gray-200"></span>
+                </div>
+                <div class="key-info bg-gray-900/50 rounded-lg p-4 flex justify-between">
+                    <span class="text-gray-400">Permanent</span>
+                    <span id="permanentStatus" class="text-gray-200"></span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Action Button -->
+        <div class="space-y-4">
+            <button id="getKeyBtn" onclick="getKey()" 
+                    class="w-full gradient-bg hover:from-purple-600 hover:to-pink-600 px-8 py-4 rounded-xl font-bold text-lg text-white transition-all duration-300 flex items-center justify-center shadow-2xl transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed neon-glow pulse">
+                <i class="fas fa-rocket mr-3"></i>Launch Nebula Key
+            </button>
+        </div>
+
+        <!-- Footer -->
+        <div class="text-center mt-10 text-gray-400 text-sm font-light">
+            <p>Keys expire in 24 hours. 1-hour cooldown between requests.</p>
+            <p class="mt-1">Powered by KeyGen Nebula &copy; 2025</p>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:3000'; // Change to your server URL
+        const statusDisplay = document.getElementById('statusDisplay');
+        const statusText = document.getElementById('statusText');
+        const countdownDisplay = document.getElementById('countdownDisplay');
+        const keyDisplay = document.getElementById('keyDisplay');
+        const generatedKey = document.getElementById('generatedKey');
+        const createdAt = document.getElementById('createdAt');
+        const expiresAt = document.getElementById('expiresAt');
+        const permanentStatus = document.getElementById('permanentStatus');
+        const getKeyBtn = document.getElementById('getKeyBtn');
+        let countdownInterval;
+        let hwid = '';
+
+        // Generate HWID using browser fingerprint
+        function generateHWID() {
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            ctx.textBaseline = 'top';
+            ctx.font = '16px Orbitron';
+            ctx.fillText('NEBULA_KEYGEN_2025', 2, 2);
+            const data = canvas.toDataURL();
+            hwid = btoa(data).substring(0, 16); // Simple base64 hash
+            return hwid;
+        }
+
+        // Check cooldown on page load
+        async function checkTimeLeft() {
+            const hwid = generateHWID();
+            try {
+                const response = await fetch(`${API_BASE}/check-time-left`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ hwid })
+                });
+                const data = await response.json();
+
+                if (data.can_request) {
+                    statusText.textContent = 'Ready to launch your nebula key!';
+                    countdownDisplay.textContent = '';
+                    statusDisplay.classList.remove('hidden');
+                    getKeyBtn.disabled = false;
+                    showToast('Ready to generate a new key!', 'success');
+                } else {
+                    statusText.textContent = data.message;
+                    statusDisplay.classList.remove('hidden');
+                    getKeyBtn.disabled = true;
+                    startCountdown(data.time_left * 3600);
+                    showToast(data.message, 'warning');
+                }
+            } catch (error) {
+                console.error('Error checking time:', error);
+                showToast('Failed to check cooldown. Please try again.', 'error');
+            }
+        }
+
+        function startCountdown(seconds) {
+            clearInterval(countdownInterval);
+            updateCountdown(seconds);
+
+            countdownInterval = setInterval(() => {
+                seconds--;
+                updateCountdown(seconds);
+                if (seconds <= 0) {
+                    clearInterval(countdownInterval);
+                    statusDisplay.classList.add('hidden');
+                    getKeyBtn.disabled = false;
+                    showToast('Cooldown complete! Launch your key now.', 'success');
+                }
+            }, 1000);
+        }
+
+        function updateCountdown(seconds) {
+            const hours = Math.floor(seconds / 3600);
+            const mins = Math.floor((seconds % 3600) / 60);
+            const secs = Math.floor(seconds % 60);
+            countdownDisplay.textContent = `${hours.toString().padStart(2, '0')}:${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+        }
+
+        async function getKey() {
+            const hwid = generateHWID();
+            try {
+                getKeyBtn.disabled = true;
+                getKeyBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-3"></i>Launching...';
+
+                const response = await fetch(`${API_BASE}/get-key`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ hwid })
+                });
+                const data = await response.json();
+
+                if (data.success) {
+                    generatedKey.textContent = data.key;
+                    createdAt.textContent = new Date().toLocaleString();
+                    expiresAt.textContent = data.expires ? new Date(data.expires).toLocaleString() : 'N/A';
+                    permanentStatus.textContent = data.permanent ? 'Yes' : 'No';
+                    keyDisplay.classList.remove('hidden');
+                    statusDisplay.classList.add('hidden');
+                    clearInterval(countdownInterval);
+                    showToast(`Key launched! Valid until ${data.expires ? new Date(data.expires).toLocaleString() : 'Permanent'}`, 'success');
+                    getKeyBtn.disabled = true;
+                } else {
+                    showToast(data.message || 'Failed to launch key', 'error');
+                    if (data.time_left) {
+                        statusText.textContent = data.message;
+                        statusDisplay.classList.remove('hidden');
+                        startCountdown(data.time_left * 3600);
+                    }
+                }
+            } catch (error) {
+                console.error('Error getting key:', error);
+                showToast('Failed to launch key. Check server connection.', 'error');
+            } finally {
+                getKeyBtn.disabled = false;
+                getKeyBtn.innerHTML = '<i class="fas fa-rocket mr-3"></i>Launch Nebula Key';
+            }
+        }
+
+        function copyKey() {
+            const keyText = generatedKey.textContent;
+            navigator.clipboard.writeText(keyText).then(() => {
+                showToast('Key copied to clipboard!', 'success');
+            }).catch(() => {
+                const textArea = document.createElement('textarea');
+                textArea.value = keyText;
+                document.body.appendChild(textArea);
+                textArea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textArea);
+                showToast('Key copied to clipboard!', 'success');
+            });
+        }
+
+        function showToast(message, type = 'info') {
+            const icon = type === 'success' ? 'fas fa-check-circle' : type === 'error' ? 'fas fa-exclamation-circle' : type === 'warning' ? 'fas fa-exclamation-triangle' : 'fas fa-info-circle';
+            const bgColor = type === 'success' ? 'bg-green-600' : type === 'error' ? 'bg-red-600' : type === 'warning' ? 'bg-yellow-600' : 'bg-blue-600';
+
+            Swal.fire({
+                toast: true,
+                position: 'top-end',
+                showConfirmButton: false,
+                timer: 4000,
+                timerProgressBar: true,
+                iconHtml: `<i class="${icon} text-2xl"></i>`,
+                title: message,
+                background: 'rgba(17, 24, 39, 0.95)',
+                color: '#fff',
+                customClass: {
+                    popup: `border-l-4 ${bgColor} shadow-2xl rounded-xl`,
+                    title: 'font-medium text-base'
+                },
+                didOpen: (toast) => {
+                    toast.addEventListener('mouseenter', Swal.stopTimer);
+                    toast.addEventListener('mouseleave', Swal.resumeTimer);
+                }
+            });
+        }
+
+        // Create animated stars, particles, characters, spaceships, beams, and orbs
+        function createBackgroundEffects() {
+            const starsContainer = document.querySelector('.stars');
+            const particlesContainer = document.querySelector('.particles');
+            const charactersContainer = document.querySelector('.characters');
+            const spaceshipsContainer = document.querySelector('.spaceships');
+            const beamsContainer = document.querySelector('.beams');
+            const orbsContainer = document.querySelector('.orbs');
+
+            // Stars
+            for (let i = 0; i < 250; i++) {
+                const star = document.createElement('div');
+                star.className = 'star';
+                star.style.left = `${Math.random() * 100}%`;
+                star.style.top = `${Math.random() * 100}%`;
+                star.style.animationDelay = `${Math.random() * 2.5}s`;
+                starsContainer.appendChild(star);
+            }
+
+            // Particles
+            for (let i = 0; i < 30; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                particle.style.left = `${Math.random() * 100}%`;
+                particle.style.top = `${Math.random() * 100}%`;
+                particle.style.animationDelay = `${Math.random() * 3.5}s`;
+                particlesContainer.appendChild(particle);
+            }
+
+            // Characters
+            const characterClasses = ['character-1', 'character-2'];
+            const characterPositions = [
+                { left: '5%', bottom: '10%' },
+                { right: '5%', bottom: '15%' },
+            ];
+            for (let i = 0; i < characterClasses.length; i++) {
+                const character = document.createElement('div');
+                character.className = `character ${characterClasses[i]}`;
+                character.style.left = characterPositions[i].left || 'auto';
+                character.style.right = characterPositions[i].right || 'auto';
+                character.style.bottom = characterPositions[i].bottom;
+                character.style.animationDelay = `${Math.random() * 1.5}s`;
+                charactersContainer.appendChild(character);
+            }
+
+            // Spaceships
+            const spaceshipClasses = ['spaceship-1', 'spaceship-2'];
+            const spaceshipPositions = [
+                { left: '10%', top: '20%' },
+                { right: '10%', top: '30%' },
+            ];
+            for (let i = 0; i < spaceshipClasses.length; i++) {
+                const spaceship = document.createElement('div');
+                spaceship.className = `spaceship ${spaceshipClasses[i]}`;
+                spaceship.style.left = spaceshipPositions[i].left || 'auto';
+                spaceship.style.right = spaceshipPositions[i].right || 'auto';
+                spaceship.style.top = spaceshipPositions[i].top;
+                spaceship.style.animationDelay = `${Math.random() * 2.5}s`;
+                spaceshipsContainer.appendChild(spaceship);
+            }
+
+            // Beams
+            for (let i = 0; i < 3; i++) {
+                const beam = document.createElement('div');
+                beam.className = 'beam';
+                beam.style.left = `${20 + i * 30}%`;
+                beam.style.top = `${Math.random() * 20}%`;
+                beam.style.animationDelay = `${Math.random() * 2}s`;
+                beamsContainer.appendChild(beam);
+            }
+
+            // Orbs
+            for (let i = 0; i < 5; i++) {
+                const orb = document.createElement('div');
+                orb.className = 'orb';
+                orb.style.left = `${Math.random() * 80 + 10}%`;
+                orb.style.top = `${Math.random() * 60 + 20}%`;
+                orb.style.animationDelay = `${Math.random() * 1.5}s`;
+                orbsContainer.appendChild(orb);
+            }
+        }
+
+        // Initialize
+        window.onload = () => {
+            createBackgroundEffects();
+            checkTimeLeft();
+        };
+    </script>
+</body>
+</html>
